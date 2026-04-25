@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RepositoryUrl>https://github.com/Abderrelmsd/Wire</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Abderrelmsd/Wire</PackageProjectUrl>
+    <PackageId>Wire</PackageId>
+    <Description>Universal outbound transport (HTTP, gRPC, GraphQL) with retry/backoff, circuit breaking, timeouts, correlation IDs and telemetry hooks.</Description>
+    <RootNamespace>Wire</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.12" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.84.0" />
+    <PackageReference Include="Grpc.Core.Api" Version="2.84.0" />
+
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Wire.Tests" />
+  </ItemGroup>
+</Project>
