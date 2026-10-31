@@ -32,6 +32,24 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Registers a second <see cref="IWireHttpClient"/> under <paramref name="key"/>, with its own underlying <see cref="HttpClient"/>
+    /// (handlers, base address…) but the same policies, circuits, correlation and telemetry. Use it when calls need different transport
+    /// rules, for example a client restricted to public addresses for user-supplied URLs beside one for the internal network. Resolve it with
+    /// <c>[FromKeyedServices(key)] IWireHttpClient</c>. Call <see cref="AddWire"/> as well.
+    /// </summary>
+    public static IServiceCollection AddKeyedWireHttpClient(this IServiceCollection services, string key, Action<IHttpClientBuilder>? configureHttpClient = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        var name = "Wire:" + key;
+        var http = services.AddHttpClient(name, c => c.Timeout = Timeout.InfiniteTimeSpan);
+        configureHttpClient?.Invoke(http);
+        services.AddKeyedTransient<IWireHttpClient>(key, (sp, _) => new WireHttpClient(
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient(name), sp.GetRequiredService<IResilienceExecutor>(),
+            sp.GetRequiredService<ICorrelationContext>(), sp.GetRequiredService<IOptions<WireOptions>>()));
+        return services;
+    }
+
     /// <summary>Registers a telemetry observer.</summary>
     public static IServiceCollection AddWireObserver<T>(this IServiceCollection services) where T : class, IWireObserver
         => services.AddSingleton<IWireObserver, T>();

@@ -177,4 +177,21 @@ public class HttpTests
         Assert.Equal(1, h.Calls);
         await Assert.ThrowsAsync<WireException>(() => sp.GetRequiredService<IWireHttpClient>().GetAsync(Url, new WireCallOptions { PolicyName = "missing" }));
     }
+
+    [Fact]
+    public async Task A_keyed_client_has_its_own_handler_and_shares_the_policies()
+    {
+        var main = new ScriptedHandler().Then(HttpStatusCode.OK);
+        var other = new ScriptedHandler().Then(HttpStatusCode.ServiceUnavailable).Then(HttpStatusCode.OK);
+        var services = new ServiceCollection();
+        services.AddWire(o => o.Default = Fast.Policy(3), http => http.ConfigurePrimaryHttpMessageHandler(() => main));
+        services.AddKeyedWireHttpClient("other", http => http.ConfigurePrimaryHttpMessageHandler(() => other));
+        using var sp = services.BuildServiceProvider();
+
+        using (var res = await sp.GetRequiredKeyedService<IWireHttpClient>("other").GetAsync(Url)) Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        Assert.Equal(2, other.Calls); // retried under the shared default policy
+        Assert.Equal(0, main.Calls);
+        using (var res = await sp.GetRequiredService<IWireHttpClient>().GetAsync(Url)) Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        Assert.Equal(1, main.Calls);
+    }
 }

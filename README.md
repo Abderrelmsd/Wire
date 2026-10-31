@@ -48,6 +48,8 @@ HTTP requests are passed as a factory (`() => new HttpRequestMessage(...)`) beca
 
 **Correlation ids.** `ICorrelationContext.Begin(id)` flows an id through async calls. It is sent as `X-Correlation-Id` (HTTP) or `x-correlation-id` (gRPC), generated if absent, and is the same across retries.
 
+**Several clients.** `services.AddKeyedWireHttpClient("internal", http => ...)` adds another `IWireHttpClient` with its own handler (resolve it with `[FromKeyedServices("internal")]`), sharing the policies, circuits and telemetry. Typical use: the default client restricted to public addresses for user-supplied URLs, and a keyed one for the internal network.
+
 **Telemetry.** Register observers with `services.AddWireObserver<T>()`. Wire also emits an `ActivitySource` and `Meter` named `Wire`.
 
 ## Behaviour to know about
